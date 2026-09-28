@@ -49,3 +49,48 @@ body:has(dialog[open]){overflow:hidden}
 .compare-status{position:absolute;inset:0;display:grid;place-items:center;background:#111512;z-index:5;color:#b7c6bb;font-size:14px;padding:30px;text-align:center;pointer-events:none}
 .comparison[data-state=ready] .compare-status{display:none}.comparison[data-state=error] .compare-status{pointer-events:auto}
 @media(max-width:700px){.comparison-heading{margin-bottom:28px}.comparison-heading p{font-size:15px}.comparison-heading p br{display:none}.comparison{height:auto;aspect-ratio:4/3;border-radius:12px}.compare-label{font-size:8px;letter-spacing:.5px;padding:4px 7px;top:10px}.compare-label.left{left:10px}.compare-label.right{right:10px}.divider>span{width:36px;height:36px}.divider svg{width:18px;height:18px}.comparison-credit{line-height:1.6}.comparison-toolbar{font-size:11px}}
+
+/* M3 motion: one lightweight backdrop and a consistent interaction rhythm. */
+:root{--motion-ease:cubic-bezier(.22,1,.36,1)}
+.ambient-scene{position:relative;isolation:isolate;overflow:clip}
+#ambientCanvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:-1}
+header{transition:border-color 240ms ease}
+header.scrolled{border-bottom-color:#ffffff12}
+header nav a.active{color:var(--text)}
+.button:active:not(:disabled){transform:translateY(1px);transition-duration:90ms}
+.button:hover span,.text-link:hover span{transform:translateX(3px)}
+.hero-selector button:hover{transform:translateY(-2px)}
+.faq-items details[open]>p,.account-panel:not([hidden]){animation:detail-enter 280ms var(--motion-ease) both}
+dialog[open]{animation:dialog-enter 320ms var(--motion-ease) both}
+dialog[open]::backdrop{animation:backdrop-enter 220ms ease both}
+@keyframes detail-enter{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes dialog-enter{from{opacity:0;transform:translateY(12px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes backdrop-enter{from{opacity:0}to{opacity:1}}
+.no-motion *::before,.no-motion *::after{animation:none!important;transition:none!important}
+.no-motion #ambientCanvas{display:none}
+@media(prefers-reduced-motion:reduce){#ambientCanvas{display:none}}
+/* A clearer, coherent motion treatment: soft volume, gentle depth, no stray lines. */
+#ambientCanvas{mask-image:linear-gradient(to bottom,transparent,#000 6%,#000 86%,transparent)}
+.hero-orbit{display:none}
+.hero-copy{animation:hero-copy-enter 780ms var(--motion-ease) both}
+.hero-stage{animation:hero-art-enter 1000ms 100ms var(--motion-ease) both}
+.hero-stage>img{animation:hero-breathe 7s ease-in-out infinite;transform-origin:center 65%;transition:opacity 240ms ease}
+.reveal{transition:opacity 700ms var(--motion-ease),transform 700ms var(--motion-ease)}
+.js .reveal{transform:translateY(24px)}
+.js .reveal.visible{transform:translateY(0)}
+.button{position:relative;isolation:isolate;overflow:hidden;transition:background 220ms ease,border-color 220ms ease,transform 260ms var(--motion-ease),box-shadow 260ms ease}
+.button::before{content:"";pointer-events:none;position:absolute;inset:-50% -20%;z-index:-1;background:linear-gradient(110deg,transparent 38%,#ffffff26 49%,transparent 60%);transform:translateX(-110%);transition:transform 650ms var(--motion-ease)}
+.button:hover::before,.button:focus-visible::before{transform:translateX(110%)}
+.button.primary:hover{transform:translateY(-2px);box-shadow:0 7px 24px #9dbba71a}
+.app-frame{transition:border-color 300ms ease,box-shadow 300ms ease}
+.app-frame:hover{border-color:#52675a;box-shadow:0 30px 70px #0005,0 0 35px #9dbba708}
+.collection-art img:hover{transform:translateY(-7px)}
+@keyframes hero-copy-enter{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes hero-art-enter{from{opacity:0;transform:translateY(24px) scale(.965)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes hero-breathe{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+@media(prefers-reduced-motion:reduce){.js .reveal{transform:none}}
+
+/* A viewport-sized background continues through every section and the footer. */
+body{isolation:isolate}
+#ambientCanvas{position:fixed;inset:0;width:100vw;height:100vh;z-index:-1;mask-image:none}
+.studio{background:rgba(13,16,14,.55)}

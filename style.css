@@ -166,7 +166,7 @@ header nav a:hover,header nav a.active{color:var(--fg)}
 .check-list li>span{display:grid;place-items:center;width:32px;height:32px;flex:none;border-radius:8px;background:rgb(255 255 255/.05);color:var(--muted)}
 
 /* pricing */
-.plans{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:1000px;margin:0 auto}
+.plans{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;max-width:1160px;margin:0 auto}
 .plan{position:relative;display:flex;flex-direction:column;padding:28px}
 .plan.featured{background:linear-gradient(var(--card-2),var(--card));border-color:var(--line-2);box-shadow:0 0 0 1px rgb(255 255 255/.04),0 30px 60px -30px rgb(0 0 0/.8)}
 .plan-badge{position:absolute;top:24px;right:24px}
@@ -179,7 +179,7 @@ header nav a:hover,header nav a.active{color:var(--fg)}
 .plan li{display:flex;gap:10px;align-items:center}
 .plan li .i{color:var(--fg);width:15px;height:15px}
 .plan .button{margin-top:auto;width:100%}
-.trust{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:1000px;margin:40px auto 0}
+.trust{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:1160px;margin:40px auto 0}
 .trust div{display:grid;grid-template-columns:auto 1fr;column-gap:12px;align-items:center;padding:4px}
 .trust .i{grid-row:span 2;width:20px;height:20px;color:var(--muted)}
 .trust b{font-size:14px;font-weight:500}.trust span{font-size:13px;color:var(--dim)}
@@ -374,6 +374,7 @@ body:has(dialog[open]){overflow:hidden}
 #supportDirect{width:100%;margin:14px 0 10px}
 
 /* responsive */
+@media (max-width:1180px){.plans{grid-template-columns:1fr 1fr;max-width:760px}}
 @media (max-width:980px){
  header nav{display:none}
  .hero{padding-top:96px}

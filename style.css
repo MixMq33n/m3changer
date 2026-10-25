@@ -273,10 +273,19 @@ body:has(dialog[open]){overflow:hidden}
 .auth-tabs button[aria-selected=true]{background:var(--card-2);color:var(--fg);box-shadow:inset 0 0 0 1px var(--line-2)}
 .auth-content h2{font-size:24px}
 .auth-content>p{font-size:14px;margin-top:8px}
-.social-auth{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:24px}
+.social-auth{display:grid;grid-template-columns:1fr;gap:8px;margin-top:24px}
 .social-button{display:flex;align-items:center;justify-content:center;gap:10px;height:42px;border-radius:var(--radius-sm);border:1px solid var(--line-2);background:rgb(255 255 255/.03);font-size:14px}
 .social-button:hover{background:rgb(255 255 255/.07)}
 .social-symbol,.social-button svg{width:16px;height:16px;font-weight:700;line-height:16px;text-align:center}
+.social-button .google-logo{width:18px;height:18px}
+.social-button:disabled{opacity:.6;cursor:default}
+.forgot-link{margin-top:8px;font-size:13px;color:var(--muted);text-decoration-color:transparent}
+.forgot-link:hover{color:var(--fg);text-decoration-color:var(--line-2)}
+.forgot-link[hidden]{display:none}
+.action-dialog .mark{width:40px;height:40px;border-radius:10px;font-size:15px;margin:0 auto 16px}
+.action-dialog form{text-align:left;margin-top:20px}
+.action-dialog .auth-submit{margin-top:4px}
+.action-dialog #actionClose{margin-top:12px}
 .auth-separator{display:flex;align-items:center;gap:12px;margin:22px 0;font-size:12px;color:var(--dim)}
 .auth-separator:before,.auth-separator:after{content:"";flex:1;height:1px;background:var(--line)}
 .auth-field{margin-bottom:14px}

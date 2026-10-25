@@ -3,12 +3,13 @@
 // links in verification / reset emails come back to this site (see handleAction), once the action URL is set in the console.
 // Same markup and routes as before (#auth?mode=…, #account/…); commerce.js still receives the 'm3-session' event.
 import { firebaseConfig, googleClientId, download } from './firebase-config.js';
+import { PLANS } from './plans.js';
 const SDK = 'https://www.gstatic.com/firebasejs/11.0.2/';
 const $ = selector => document.querySelector(selector);
 const dialog = $('#authDialog'), form = $('#authForm'), message = $('#authMessage');
 let fb = null, auth = null, db = null, initError = '', tokenClient = null, tokenWaiter = null;
 let user = null, mode = 'register', ready = false, busy = false, previousHash = '', goAccount = false, pending = null;
-const settings = { providers: { google: true }, download: { available: !!download.url, version: download.version }, commerce: { plans: [] } };
+const settings = { providers: { google: true }, download: { available: !!download.url, version: download.version }, commerce: { plans: PLANS.map(p => ({ id: p.id, name: p.name, days: p.days, price: String(p.price), available: true })) } };
 
 const errors = {
   'auth/email-already-in-use': 'Аккаунт с этим email уже есть. Войди или восстанови пароль.',

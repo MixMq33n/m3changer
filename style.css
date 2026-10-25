@@ -373,6 +373,40 @@ body:has(dialog[open]){overflow:hidden}
 .support-panel p{font-size:14px;margin-bottom:16px}
 #supportDirect{width:100%;margin:14px 0 10px}
 
+/* checkout */
+.checkout-dialog{width:min(520px,94vw);max-height:92vh;overflow:auto;padding:32px}
+.checkout-dialog h2{font-size:24px;margin:8px 0 18px}
+.pay-plans{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:4px;background:var(--bg);border:1px solid var(--line);border-radius:12px}
+.pay-plan{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 4px;border:0;border-radius:9px;background:none;color:var(--dim);font-size:13px;transition:background .15s,color .15s}
+.pay-plan b{font-size:14px;font-weight:600;color:var(--muted)}
+.pay-plan:hover b{color:var(--fg)}
+.pay-plan[aria-checked=true]{background:var(--card-2);box-shadow:inset 0 0 0 1px var(--line-2);color:var(--muted)}
+.pay-plan[aria-checked=true] b{color:var(--fg)}
+.pay-summary{display:flex;justify-content:space-between;align-items:center;gap:16px;margin:14px 0 20px;padding:16px 18px;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+.pay-summary div b{display:block;font-weight:500;font-size:14px}
+.pay-summary span{font-size:13px;color:var(--dim)}
+#payTotal{font-size:26px;font-weight:600;letter-spacing:-.02em;white-space:nowrap}
+.pay-help{font-size:12px;color:var(--dim);margin-top:6px;line-height:1.5}
+.pay-methods{border:0;padding:0;margin:18px 0 0;display:grid;gap:8px;min-width:0}
+.pay-methods legend{padding:0;margin-bottom:8px;font-size:13px;font-weight:500}
+.pay-method{position:relative;display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--line-2);border-radius:12px;background:var(--card);cursor:pointer;transition:border-color .15s}
+.pay-method input{position:absolute;opacity:0;pointer-events:none}
+.pay-method:has(input:checked){border-color:rgb(255 255 255/.4);box-shadow:0 0 0 1px rgb(255 255 255/.15)}
+.pay-method:has(input:focus-visible){outline:2px solid var(--fg);outline-offset:2px}
+.pay-method-text b{display:block;font-size:14px;font-weight:600}
+.pay-method-text small{display:block;font-size:12px;color:var(--dim);line-height:1.4}
+.sbp-logo{display:grid;place-items:center;width:38px;height:38px;flex:none;border-radius:10px;background:#fff}
+.sbp-logo svg{width:24px;height:24px}
+.pay-check{margin-left:auto;width:18px;height:18px;flex:none;border-radius:50%;border:1.5px solid var(--line-2);transition:border .15s}
+.pay-method:has(input:checked) .pay-check{border:5px solid #f4f4f5}
+.pay-soon{justify-content:center;border-style:dashed;background:none;color:var(--dim);font-size:13px;cursor:default}
+.pay-verify{margin-top:14px;padding:10px 12px;border-radius:10px;border:1px solid rgb(239 90 60/.35);background:rgb(239 90 60/.08);font-size:13px;color:#ffc2b5}
+.pay-verify[hidden]{display:none}
+#paySubmit{margin-top:18px}
+.pay-legal{margin-top:10px;font-size:12px;color:var(--dim);text-align:center}
+.pay-legal a{text-decoration:underline;text-underline-offset:3px}
+@media (max-width:640px){.checkout-dialog{padding:28px 18px}.pay-plans{grid-template-columns:1fr 1fr}}
+
 /* responsive */
 @media (max-width:1180px){.plans{grid-template-columns:1fr 1fr;max-width:760px}}
 @media (max-width:980px){

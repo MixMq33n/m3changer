@@ -11,7 +11,7 @@ export const firebaseConfig = {
 
 // OAuth "Web client" ID for the Google button (Google Identity Services). Firebase creates it automatically:
 // Authentication → Sign-in method → Google → Web SDK configuration → Web client ID. Empty = Google button off.
-export const googleClientId = '';
+export const googleClientId = '930081621755-g2upr0n000qp4gb059p2ustsf803vpf3.apps.googleusercontent.com';
 
 // Installer link shown in the account after sign-in. Empty = "появится позже".
 export const download = { url: '', version: '7.0.9' };

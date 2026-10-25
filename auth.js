@@ -31,7 +31,9 @@ const errors = {
 };
 const explain = error => errors[error && error.code] || (error && error.message) || 'Не удалось выполнить действие.';
 function announce(element, text, error = false) { element.textContent = text; element.classList.toggle('is-error', error); }
-const backTo = hash => ({ url: location.origin + location.pathname + hash });
+// Email links come straight back to this page with ?mode=…&oobCode=… (handleCodeInApp), so the code is applied here
+// even while the console keeps Firebase's default action URL. Firebase appends the query, so the URL has no hash.
+const backTo = () => ({ url: location.origin + location.pathname, handleCodeInApp: true });
 
 async function boot() {
   try {
@@ -80,7 +82,7 @@ async function handleAction() {
   reset.hidden = true; announce($('#actionMessage'), '');
   const show = (heading, body) => { title.textContent = heading; text.textContent = body; if (!box.open) box.showModal(); };
   try {
-    if (action === 'verifyEmail') { await fb.applyActionCode(auth, code); if (auth.currentUser) await fb.reload(auth.currentUser).catch(() => {}); show('Email подтверждён', 'Готово. Адрес подтверждён, аккаунт M3 полностью активен.'); }
+    if (action === 'verifyEmail') { await fb.applyActionCode(auth, code); if (auth.currentUser) await fb.reload(auth.currentUser).catch(() => {}); show('Email подтверждён', 'Готово. Адрес подтверждён, аккаунт M3 полностью активен.'); $('#actionClose').dataset.next = 'account/profile'; }
     else if (action === 'recoverEmail') { await fb.applyActionCode(auth, code); show('Email восстановлен', 'Адрес аккаунта возвращён. Если это был не ты, смени пароль.'); }
     else if (action === 'resetPassword') {
       const email = await fb.verifyPasswordResetCode(auth, code);

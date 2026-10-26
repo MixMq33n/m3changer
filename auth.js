@@ -184,9 +184,15 @@ function route() {
 }
 
 // The verification link opens Firebase's page; when the person comes back, pick up the new status.
+// Also refreshes the ID token, whose email_verified claim the payments function reads (Firebase reissues it only hourly).
 async function refreshVerification() {
-  if (!auth || !auth.currentUser || auth.currentUser.emailVerified) return;
-  try { await fb.reload(auth.currentUser); if (auth.currentUser.emailVerified) { user = { ...user, email_verified: true }; paintAccount(); } } catch {}
+  if (!auth || !auth.currentUser) return false;
+  if (auth.currentUser.emailVerified) return true;
+  try {
+    await fb.reload(auth.currentUser);
+    if (auth.currentUser.emailVerified) { await auth.currentUser.getIdToken(true).catch(() => {}); user = { ...user, email_verified: true }; paintAccount(); }
+  } catch {}
+  return !!auth.currentUser.emailVerified;
 }
 
 function setBusy(value, label) {
@@ -279,11 +285,13 @@ $('#accountDownload').addEventListener('click', () => { if (user && settings.dow
 $('#actionClose').addEventListener('click', () => { const next = $('#actionClose').dataset.next || (user ? 'account/profile' : ''); delete $('#actionClose').dataset.next; $('#actionDialog').close(); if (next) location.hash = next; else route(); });
 // Bridge for checkout.js: the sign-in token for the payments function and the live list of this account's orders.
 window.M3Session = {
-  idToken: () => auth && auth.currentUser ? auth.currentUser.getIdToken() : Promise.reject(new Error('Войди в аккаунт, чтобы оплатить.')),
+  idToken: () => auth && auth.currentUser ? auth.currentUser.getIdToken(true) : Promise.reject(new Error('Войди в аккаунт, чтобы оплатить.')),
+  refresh: refreshVerification,
   watchOrders: (uid, callback) => fb.onSnapshot(fb.query(fb.collection(db, 'orders'), fb.where('uid', '==', uid)),
     snap => callback(snap.docs.map(d => ({ id: d.id, ...d.data() }))), () => callback(null))
 };
 addEventListener('hashchange', route);
 addEventListener('focus', () => { void refreshVerification(); });
+document.addEventListener('visibilitychange', () => { if (!document.hidden) void refreshVerification(); });
 route();
 void boot();

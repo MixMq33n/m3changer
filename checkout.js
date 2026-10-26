@@ -30,7 +30,17 @@ export function openCheckout(id, device) {
   $('#payDevice').value = device || $('#payDevice').value || saved;
   say(''); paint();
   if (!dialog.open) dialog.showModal();
+  // Confirmed in another tab or on the phone: pick that up before blocking the payment.
+  if (user && !user.email_verified && window.M3Session) void window.M3Session.refresh();
 }
+
+$('#payVerifyCheck').addEventListener('click', async () => {
+  const button = $('#payVerifyCheck'); button.disabled = true;
+  const verified = window.M3Session ? await window.M3Session.refresh() : false;
+  button.disabled = false;
+  if (!verified) say('Почта пока не подтверждена. Открой письмо от M3 Changer и нажми ссылку, затем снова «Я подтвердил».', true);
+  else say('');
+});
 
 $('#payPlans').addEventListener('click', event => { const button = event.target.closest('[data-pay-plan]'); if (!button) return; plan = PLANS.find(p => p.id === button.dataset.payPlan); say(''); paint(); });
 $('#payPlans').addEventListener('keydown', event => {

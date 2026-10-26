@@ -402,6 +402,7 @@ body:has(dialog[open]){overflow:hidden}
 .pay-soon{justify-content:center;border-style:dashed;background:none;color:var(--dim);font-size:13px;cursor:default}
 .pay-verify{margin-top:14px;padding:10px 12px;border-radius:10px;border:1px solid rgb(239 90 60/.35);background:rgb(239 90 60/.08);font-size:13px;color:#ffc2b5}
 .pay-verify[hidden]{display:none}
+.pay-verify .text-link{color:#fff;margin-left:4px;font-size:13px}
 #paySubmit{margin-top:18px}
 .pay-legal{margin-top:10px;font-size:12px;color:var(--dim);text-align:center}
 .pay-legal a{text-decoration:underline;text-underline-offset:3px}

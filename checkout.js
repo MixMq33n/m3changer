@@ -83,11 +83,11 @@ form.addEventListener('submit', async event => {
 async function callPayments(route, body) {
   const token = await window.M3Session.idToken();
   const response = await fetch(paymentsUrl + (paymentsUrl.includes('?') ? '&' : '?') + 'route=' + route, {
-    method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify(body)
+    method: 'POST', headers: { 'Content-Type': 'application/json', 'X-M3-Token': token }, body: JSON.stringify(body)
   });
   let result = {};
   try { result = await response.json(); } catch {}
-  if (!response.ok) throw new Error(result.error || 'Сервис оплаты не ответил. Попробуй ещё раз.');
+  if (!response.ok) throw new Error(result.error || 'Сервис оплаты не ответил (' + response.status + '). Попробуй ещё раз.');
   return result;
 }
 

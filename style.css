@@ -450,3 +450,5 @@ body:has(dialog[open]){overflow:hidden}
  .info-dialog{padding:28px 20px}
  #supportToggle>span:not(.support-dot){display:none}#supportToggle{padding:0 13px}
 }
+
+.provided-document{white-space:pre-line;line-height:1.7}

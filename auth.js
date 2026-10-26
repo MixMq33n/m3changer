@@ -277,6 +277,12 @@ $('#profileForm').addEventListener('submit', async event => {
 $('#logoutButton').addEventListener('click', async () => { const button = $('#logoutButton'); button.disabled = true; try { await fb.signOut(auth); location.hash = 'top'; } catch (error) { announce($('#accountMessage'), explain(error), true); } finally { button.disabled = false; } });
 $('#accountDownload').addEventListener('click', () => { if (user && settings.download.available) location.assign(download.url); });
 $('#actionClose').addEventListener('click', () => { const next = $('#actionClose').dataset.next || (user ? 'account/profile' : ''); delete $('#actionClose').dataset.next; $('#actionDialog').close(); if (next) location.hash = next; else route(); });
+// Bridge for checkout.js: the sign-in token for the payments function and the live list of this account's orders.
+window.M3Session = {
+  idToken: () => auth && auth.currentUser ? auth.currentUser.getIdToken() : Promise.reject(new Error('Войди в аккаунт, чтобы оплатить.')),
+  watchOrders: (uid, callback) => fb.onSnapshot(fb.query(fb.collection(db, 'orders'), fb.where('uid', '==', uid)),
+    snap => callback(snap.docs.map(d => ({ id: d.id, ...d.data() }))), () => callback(null))
+};
 addEventListener('hashchange', route);
 addEventListener('focus', () => { void refreshVerification(); });
 route();

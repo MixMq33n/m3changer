@@ -13,5 +13,8 @@ export const firebaseConfig = {
 // Authentication → Sign-in method → Google → Web SDK configuration → Web client ID. Empty = Google button off.
 export const googleClientId = '930081621755-g2upr0n000qp4gb059p2ustsf803vpf3.apps.googleusercontent.com';
 
+// Public URL of the Yandex Cloud payments function (payments-function/). Empty = checkout says payments are coming soon.
+export const paymentsUrl = 'https://functions.yandexcloud.net/d4e5k6dk3fiavq7v728p';
+
 // Installer link shown in the account after sign-in. Empty = "появится позже".
 export const download = { url: '', version: '7.0.9' };

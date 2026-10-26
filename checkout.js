@@ -1,6 +1,8 @@
 // Checkout window: plan, installation ID and payment method, opened from the price cards and the account "Доступ" tab.
-// No payment provider is connected yet. startPayment() at the bottom is the one place to plug one in.
+// Payment goes through the Yandex Cloud function (payments-function/, T-Bank): it creates the order and the payment,
+// and after the bank confirms it writes the M3 key into the order, which the "Доступ" tab shows live.
 import { PLANS, rub, perDay } from './plans.js';
+import { paymentsUrl } from './firebase-config.js';
 const $ = selector => document.querySelector(selector);
 const dialog = $('#checkoutDialog'), form = $('#payForm'), message = $('#payMessage');
 const DEVICE = /^[0-9A-F]{4}(-[0-9A-F]{4}){7}$/, PENDING = 'm3-pending-plan', LAST_DEVICE = 'm3-device';
@@ -56,6 +58,8 @@ document.addEventListener('submit', event => {
 document.addEventListener('m3-session', event => {
   user = event.detail.user;
   if (dialog.open) paint();
+  paintAccessForm();
+  watch();
   if (!user) return;
   let pending = null;
   try { pending = sessionStorage.getItem(PENDING); sessionStorage.removeItem(PENDING); } catch {}
@@ -76,11 +80,83 @@ form.addEventListener('submit', async event => {
   finally { paint(); }
 });
 
-// Plug the payment provider in here. `order` has plan, days, amount (RUB), method ('sbp'), device, uid and email.
-// Typical flow: send the order to your payment backend, get the provider's payment URL and location.assign() it.
-// A separate script can also provide window.M3Payments = { start(order) { … } } without touching this file.
+async function callPayments(route, body) {
+  const token = await window.M3Session.idToken();
+  const response = await fetch(paymentsUrl + (paymentsUrl.includes('?') ? '&' : '?') + 'route=' + route, {
+    method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify(body)
+  });
+  let result = {};
+  try { result = await response.json(); } catch {}
+  if (!response.ok) throw new Error(result.error || 'Сервис оплаты не ответил. Попробуй ещё раз.');
+  return result;
+}
+
+// The server decides the price from the plan id; the browser only says which plan and which installation.
 async function startPayment(order) {
-  document.dispatchEvent(new CustomEvent('m3-checkout', { detail: order }));
-  if (window.M3Payments && typeof window.M3Payments.start === 'function') return window.M3Payments.start(order);
-  say('Приём оплаты скоро появится. Деньги не списаны, заказ на ' + order.days + ' дней за ' + rub(order.amount) + ' пока не создан.');
+  if (!paymentsUrl) { say('Приём оплаты скоро появится. Деньги не списаны.'); return; }
+  say('Создаём платёж…');
+  const { orderId, paymentUrl } = await callPayments('create', { plan: order.plan, device: order.device });
+  try { sessionStorage.setItem('m3-last-order', orderId); } catch {}
+  location.assign(paymentUrl);
+}
+
+// Account "Доступ" tab: plan list in the form, and orders with keys straight from Firestore (updates by itself).
+const STATUS = { new: 'Создаётся', pending: 'Ожидает оплаты', paid: 'Оплачено', review: 'Проверяется', rejected: 'Оплата не прошла', canceled: 'Отменён', expired: 'Время оплаты истекло', refunded: 'Возврат', error: 'Не создан' };
+let watching = null, stopWatching = null;
+function paintAccessForm() {
+  const select = $('#billingPlan');
+  if (!select.options.length) { select.innerHTML = PLANS.map(p => `<option value="${p.id}">${p.name} · ${rub(p.price)}</option>`).join(''); select.value = 'month'; }
+  $('#checkoutSubmit').disabled = !user;
+  $('#billingSetup').textContent = paymentsUrl ? 'Оплата через СБП. Ключ появится здесь сам сразу после оплаты.' : 'Приём оплаты скоро появится.';
+}
+function watch() {
+  const uid = user && user.uid;
+  if (uid === watching) return;
+  if (stopWatching) stopWatching();
+  watching = uid; stopWatching = null;
+  if (!uid || !window.M3Session) { renderOrders([]); return; }
+  stopWatching = window.M3Session.watchOrders(uid, orders => { renderOrders(orders); checkReturning(orders); });
+}
+function renderOrders(orders) {
+  const root = $('#billingOrders'); root.replaceChildren();
+  const list = (orders || []).filter(o => o.status !== 'new').sort((a, b) => (b.createdTs || 0) - (a.createdTs || 0));
+  if (!list.length) { const p = document.createElement('p'); p.textContent = orders === null ? 'Не удалось загрузить заказы. Обнови страницу.' : 'Покупок пока нет.'; root.append(p); return; }
+  for (const order of list) {
+    const card = document.createElement('article'); card.className = 'billing-order' + (order.status === 'paid' ? ' is-paid' : '');
+    const head = document.createElement('div'); head.className = 'order-head';
+    const title = document.createElement('strong'); title.textContent = (order.name || order.days + ' дней') + ' · ' + rub(order.amount);
+    const badge = document.createElement('span'); badge.className = 'order-status status-' + order.status; badge.textContent = STATUS[order.status] || order.status;
+    head.append(title, badge);
+    const meta = document.createElement('p'); meta.className = 'order-meta';
+    meta.textContent = 'ID …' + String(order.device || '').slice(-9) + (order.createdTs ? ' · ' + new Date(order.createdTs * 1000).toLocaleDateString('ru-RU') : '');
+    card.append(head, meta);
+    if (order.status === 'paid' && order.key) {
+      const row = document.createElement('div'); row.className = 'order-key';
+      const key = document.createElement('code'); key.textContent = order.key;
+      const copy = document.createElement('button'); copy.type = 'button'; copy.className = 'button small'; copy.textContent = 'Копировать';
+      copy.addEventListener('click', async () => { try { await navigator.clipboard.writeText(order.key); copy.textContent = 'Скопировано'; } catch { getSelection().selectAllChildren(key); copy.textContent = 'Нажми Ctrl+C'; } });
+      row.append(key, copy);
+      const until = document.createElement('p'); until.className = 'order-meta'; until.textContent = 'Действует до ' + new Date(order.expiresAt * 1000).toLocaleDateString('ru-RU');
+      card.append(row, until);
+    } else if (order.status === 'paid') {
+      const note = document.createElement('p'); note.className = 'order-meta'; note.textContent = 'Оплата получена, ключ выдадим вручную в ближайшее время.'; card.append(note);
+    } else if (order.status === 'pending') {
+      const actions = document.createElement('div'); actions.className = 'order-actions';
+      if (order.paymentUrl) { const pay = document.createElement('a'); pay.className = 'button small'; pay.href = order.paymentUrl; pay.textContent = 'Продолжить оплату'; actions.append(pay); }
+      const check = document.createElement('button'); check.type = 'button'; check.className = 'text-link'; check.textContent = 'Проверить оплату';
+      check.addEventListener('click', async () => { check.disabled = true; try { await callPayments('check', { orderId: order.id }); } catch (e) { $('#billingMessage').textContent = e.message; } finally { check.disabled = false; } });
+      actions.append(check); card.append(actions);
+    }
+    root.append(card);
+  }
+}
+// Back from the payment form: if the bank's notification is late, ask the function to check the payment once.
+let checked = false;
+function checkReturning(orders) {
+  let last = null; try { last = sessionStorage.getItem('m3-last-order'); } catch {}
+  const order = last && (orders || []).find(o => o.id === last);
+  if (!order || checked || !paymentsUrl) return;
+  if (order.status !== 'pending') { try { sessionStorage.removeItem('m3-last-order'); } catch {} return; }
+  checked = true;
+  setTimeout(() => { callPayments('check', { orderId: order.id }).catch(() => {}); }, 2500);
 }

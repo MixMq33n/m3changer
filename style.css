@@ -407,6 +407,18 @@ body:has(dialog[open]){overflow:hidden}
 .pay-legal a{text-decoration:underline;text-underline-offset:3px}
 @media (max-width:640px){.checkout-dialog{padding:28px 18px}.pay-plans{grid-template-columns:1fr 1fr}}
 
+/* orders in the account */
+.billing-order .order-head{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.billing-order strong{font-weight:600}
+.order-status{flex:none;height:22px;display:inline-flex;align-items:center;padding:0 9px;border-radius:99px;font-size:12px;border:1px solid var(--line-2);color:var(--muted)}
+.order-status.status-paid{color:#7ee2a0;border-color:rgb(126 226 160/.35);background:rgb(126 226 160/.08)}
+.order-status.status-pending,.order-status.status-review{color:#f4d58d;border-color:rgb(244 213 141/.3)}
+.order-status.status-rejected,.order-status.status-error,.order-status.status-expired{color:#ff9e8c;border-color:rgb(255 158 140/.3)}
+.order-meta{margin-top:4px;font-size:12px;color:var(--dim)}
+.order-key{display:flex;align-items:center;gap:10px;margin-top:12px}
+.order-key code{flex:1;min-width:0;padding:10px 12px;border-radius:8px;border:1px solid var(--line-2);background:var(--bg);font:600 15px ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.08em;text-align:center;user-select:all}
+.order-actions{display:flex;align-items:center;gap:14px;margin-top:10px}
+
 /* responsive */
 @media (max-width:1180px){.plans{grid-template-columns:1fr 1fr;max-width:760px}}
 @media (max-width:980px){

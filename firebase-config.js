@@ -17,4 +17,5 @@ export const googleClientId = '930081621755-g2upr0n000qp4gb059p2ustsf803vpf3.app
 export const paymentsUrl = 'https://functions.yandexcloud.net/d4e5k6dk3fiavq7v728p';
 
 // Installer link shown in the account after sign-in. Empty = "появится позже".
-export const download = { url: '', version: '7.0.9' };
+// Small online installer (about 90 KB) served from this site; it then fetches the newest launcher from GitHub Releases.
+export const download = { url: 'M3-Changer-Setup.exe', version: '7.1.1' };

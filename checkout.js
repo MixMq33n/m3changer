@@ -117,7 +117,7 @@ function paintAccessForm() {
   const select = $('#billingPlan');
   if (!select.options.length) { select.innerHTML = PLANS.map(p => `<option value="${p.id}">${p.name} · ${rub(p.price)}</option>`).join(''); select.value = 'month'; }
   $('#checkoutSubmit').disabled = !user;
-  $('#billingSetup').textContent = paymentsUrl ? 'Оплата через СБП. Ключ появится здесь сам сразу после оплаты.' : 'Приём оплаты скоро появится.';
+  $('#billingSetup').textContent = paymentsUrl ? 'Оплата через ЮKassa: карта, СБП и другие способы. Ключ появится здесь сам сразу после оплаты.' : 'Приём оплаты скоро появится.';
 }
 function watch() {
   const uid = user && user.uid;

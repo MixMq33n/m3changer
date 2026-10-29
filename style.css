@@ -398,6 +398,7 @@ body:has(dialog[open]){overflow:hidden}
 .sbp-logo{display:grid;place-items:center;width:38px;height:38px;flex:none;border-radius:10px;background:#fff}
 .sbp-logo{overflow:hidden}
 .sbp-logo img{display:block;width:100%;height:100%;object-fit:cover}
+.pay-method-text small{line-height:1.4}
 .pay-check{margin-left:auto;width:18px;height:18px;flex:none;border-radius:50%;border:1.5px solid var(--line-2);transition:border .15s}
 .pay-method:has(input:checked) .pay-check{border:5px solid #f4f4f5}
 .pay-soon{justify-content:center;border-style:dashed;background:none;color:var(--dim);font-size:13px;cursor:default}

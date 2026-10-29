@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);document.documentElement.classList.add('js');
+﻿const $=s=>document.querySelector(s);document.documentElement.classList.add('js');
 const heroes=[['phantom_assassin','Phantom Assassin'],['juggernaut','Juggernaut'],['pudge','Pudge'],['invoker','Invoker'],['drow_ranger','Drow Ranger'],['nevermore','Shadow Fiend']];
 let switchTimer,categoryAnimations=[];heroes.forEach(([id,name],index)=>{const b=document.createElement('button');b.innerHTML=`<img src="assets/hero_${id}.png" alt="">`;b.setAttribute('aria-label',name);b.setAttribute('aria-pressed',String(index===0));b.addEventListener('click',()=>{clearTimeout(switchTimer);$('.hero-stage img').classList.add('switching');switchTimer=setTimeout(()=>{$('#heroArt').src=`assets/render_${id}.png`;$('#heroArt').alt=name+' из Dota 2';$('#heroName').textContent=name;$('.hero-selection-caption .muted').textContent=`0${index+1} / 06`;document.querySelectorAll('.hero-selector button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));$('#heroArt').classList.remove('switching');},motion?180:0)});$('.hero-selector').append(b)});
 // Start with the full animation experience regardless of Windows settings.
@@ -82,3 +82,40 @@ document.addEventListener('m3-session',event=>{const plans=event.detail?.setting
 
 // Grid lines light up around the cursor in sections marked .grid-bg.
 document.querySelectorAll('.grid-bg').forEach(section=>{section.addEventListener('pointermove',e=>{if(!motion||e.pointerType==='touch')return;const r=section.getBoundingClientRect();section.style.setProperty('--mx',e.clientX-r.left+'px');section.style.setProperty('--my',e.clientY-r.top+'px')},{passive:true});section.addEventListener('pointerleave',()=>section.style.removeProperty('--mx'))});
+
+// Smooth, eased scroll for the in-page section links ("Смотреть возможности" and the menu), with a short glow on the target.
+(() => {
+  const SECTIONS = new Set(['features', 'catalog', 'studio', 'compare', 'safety', 'pricing', 'start', 'faq']);
+  const still = () => document.body.classList.contains('no-motion') || matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  let frame = 0, timer = 0;
+  const halt = () => { cancelAnimationFrame(frame); clearTimeout(timer); };
+  function glide(target) {
+    const root = document.documentElement, offset = parseFloat(getComputedStyle(root).scrollPaddingTop) || 84;
+    const from = scrollY, to = Math.max(0, Math.min(target.getBoundingClientRect().top + from - offset, root.scrollHeight - innerHeight));
+    const distance = to - from, duration = Math.min(1500, Math.max(900, Math.abs(distance) * .9));
+    halt(); root.style.scrollBehavior = 'auto';
+    const start = performance.now();
+    // Driven by the screen refresh, with a timer as a backup for when the browser pauses frames (hidden or throttled tab).
+    const run = () => {
+      halt();
+      const t = Math.min(1, (performance.now() - start) / duration);
+      scrollTo(0, from + distance * ease(t));
+      if (t < 1) { frame = requestAnimationFrame(run); timer = setTimeout(run, 34); return; }
+      root.style.scrollBehavior = ''; target.classList.remove('glow'); void target.offsetWidth; target.classList.add('glow'); setTimeout(() => target.classList.remove('glow'), 1400);
+    };
+    run();
+  }
+  document.addEventListener('click', event => {
+    const link = event.target.closest('a[href^="#"]');
+    if (!link || event.defaultPrevented || event.metaKey || event.ctrlKey || event.shiftKey || event.button) return;
+    const id = link.getAttribute('href').slice(1);
+    const target = SECTIONS.has(id) && document.getElementById(id);
+    if (!target || still()) return;
+    event.preventDefault();
+    try { history.pushState(null, '', '#' + id); } catch {}
+    glide(target);
+  });
+  // The user grabbing the page (wheel, touch, keys) stops the glide at once.
+  for (const type of ['wheel', 'touchstart', 'keydown']) addEventListener(type, () => { halt(); document.documentElement.style.scrollBehavior = ''; }, { passive: true });
+})();

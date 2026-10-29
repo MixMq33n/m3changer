@@ -86,7 +86,8 @@ document.querySelectorAll('.grid-bg').forEach(section=>{section.addEventListener
 // Smooth, eased scroll for the in-page section links ("Смотреть возможности" and the menu), with a short glow on the target.
 (() => {
   const SECTIONS = new Set(['features', 'catalog', 'studio', 'compare', 'safety', 'pricing', 'start', 'faq']);
-  const still = () => document.body.classList.contains('no-motion') || matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Only the site's own "Анимации" switch turns this off: many Windows setups report "reduce motion" without the user having chosen it.
+  const still = () => document.body.classList.contains('no-motion');
   const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
   let frame = 0, timer = 0;
   const halt = () => { cancelAnimationFrame(frame); clearTimeout(timer); };

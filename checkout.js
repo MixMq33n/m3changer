@@ -6,7 +6,12 @@ import { paymentsUrl } from './firebase-config.js';
 const $ = selector => document.querySelector(selector);
 const dialog = $('#checkoutDialog'), form = $('#payForm'), message = $('#payMessage');
 const DEVICE = /^[0-9A-F]{4}(-[0-9A-F]{4}){7}$/, PENDING = 'm3-pending-plan', LAST_DEVICE = 'm3-device';
-let user = null, plan = PLANS.find(p => p.id === 'month') || PLANS[0];
+let user = null, plan = PLANS.find(p => p.id === 'month') || PLANS[0], promo = null;
+const PROMO_KEY = 'm3-promo';
+// Same rounding as the server (payments-function/index.py discounted): whole rubles, half rounded up.
+const priceOf = p => promo ? Math.floor((p.price * (100 - promo.percent) + 50) / 100) : p.price;
+// A link like m3changer.ru/?promo=NAME remembers the code until checkout.
+try { const fromLink = new URLSearchParams(location.search).get('promo'); if (fromLink) localStorage.setItem(PROMO_KEY, fromLink.trim().toUpperCase().slice(0, 24)); } catch {}
 
 function say(text, error = false) { message.textContent = text; message.classList.toggle('is-error', error); }
 
@@ -15,9 +20,11 @@ $('#payPlans').innerHTML = PLANS.map(p => `<button type="button" class="pay-plan
 function paint() {
   document.querySelectorAll('[data-pay-plan]').forEach(button => { const on = button.dataset.payPlan === plan.id; button.setAttribute('aria-checked', String(on)); button.tabIndex = on ? 0 : -1; });
   $('#payPlanName').textContent = 'M3 Changer · ' + plan.name;
-  $('#payPerDay').textContent = perDay(plan);
-  $('#payTotal').textContent = rub(plan.price);
-  $('#paySubmit').textContent = 'Оплатить ' + rub(plan.price);
+  $('#payPerDay').textContent = perDay({ ...plan, price: priceOf(plan) }) + (promo ? ' · скидка ' + promo.percent + '%' : '');
+  const total = $('#payTotal'); total.replaceChildren();
+  if (promo) { const old = document.createElement('s'); old.className = 'pay-old'; old.textContent = rub(plan.price); total.append(old); }
+  total.append(rub(priceOf(plan)));
+  $('#paySubmit').textContent = 'Оплатить ' + rub(priceOf(plan));
   const verified = !!(user && user.email_verified);
   $('#payVerify').hidden = !user || verified;
   $('#paySubmit').disabled = !verified;
@@ -28,8 +35,11 @@ export function openCheckout(id, device) {
   let saved = '';
   try { saved = localStorage.getItem(LAST_DEVICE) || ''; } catch {}
   $('#payDevice').value = device || $('#payDevice').value || saved;
+  let code = ''; try { code = localStorage.getItem(PROMO_KEY) || ''; } catch {}
+  if (!$('#payPromo').value && code) $('#payPromo').value = code;
   say(''); paint();
   if (!dialog.open) dialog.showModal();
+  if (!promo && $('#payPromo').value && user) void applyPromo(true);
   // Confirmed in another tab or on the phone: pick that up before blocking the payment.
   if (user && !user.email_verified && window.M3Session) void window.M3Session.refresh();
 }
@@ -41,6 +51,27 @@ $('#payVerifyCheck').addEventListener('click', async () => {
   if (!verified) say('Почта пока не подтверждена. Открой письмо от M3 Changer и нажми ссылку, затем снова «Я подтвердил».', true);
   else say('');
 });
+
+function promoNote(text, kind = '') { const note = $('#payPromoNote'); note.textContent = text; note.className = 'pay-help' + (kind ? ' is-' + kind : ''); }
+async function applyPromo(quiet = false) {
+  const code = $('#payPromo').value.trim().toUpperCase();
+  $('#payPromo').value = code;
+  if (!code) { promo = null; promoNote(''); try { localStorage.removeItem(PROMO_KEY); } catch {} paint(); return; }
+  if (!user || !paymentsUrl) { if (!quiet) promoNote('Войди в аккаунт, чтобы применить промокод.', 'error'); return; }
+  const button = $('#payPromoApply'); button.disabled = true;
+  try {
+    const answer = await callPayments('promo', { promo: code });
+    promo = { code: answer.code, percent: answer.percent };
+    promoNote('Промокод ' + promo.code + ': скидка ' + promo.percent + '%.', 'ok');
+    try { localStorage.setItem(PROMO_KEY, promo.code); } catch {}
+  } catch (error) {
+    promo = null; promoNote(error.message, 'error');
+    try { localStorage.removeItem(PROMO_KEY); } catch {}
+  } finally { button.disabled = false; paint(); }
+}
+$('#payPromoApply').addEventListener('click', () => applyPromo());
+$('#payPromo').addEventListener('input', () => { if (promo && $('#payPromo').value.trim().toUpperCase() !== promo.code) { promo = null; promoNote(''); paint(); } });
+$('#payPromo').addEventListener('keydown', event => { if (event.key === 'Enter') { event.preventDefault(); void applyPromo(); } });
 
 $('#payPlans').addEventListener('click', event => { const button = event.target.closest('[data-pay-plan]'); if (!button) return; plan = PLANS.find(p => p.id === button.dataset.payPlan); say(''); paint(); });
 $('#payPlans').addEventListener('keydown', event => {
@@ -83,7 +114,8 @@ form.addEventListener('submit', async event => {
   if (!DEVICE.test(device)) { say('Вставь ID установки из окна активации M3: 8 групп по 4 символа через дефис.', true); $('#payDevice').focus(); return; }
   $('#payDevice').value = device;
   try { localStorage.setItem(LAST_DEVICE, device); } catch {}
-  const order = { plan: plan.id, days: plan.days, amount: plan.price, currency: 'RUB', method: form.elements.payMethod.value, device, uid: user.uid, email: user.email };
+  if ($('#payPromo').value.trim() && !promo) { await applyPromo(); if (!promo) return; }
+  const order = { plan: plan.id, days: plan.days, amount: priceOf(plan), currency: 'RUB', promo: promo ? promo.code : '', method: form.elements.payMethod.value, device, uid: user.uid, email: user.email };
   const button = $('#paySubmit'); button.disabled = true; say('');
   try { await startPayment(order); }
   catch (error) { say(error && error.message ? error.message : 'Не удалось начать оплату. Попробуй ещё раз.', true); }
@@ -105,7 +137,7 @@ async function callPayments(route, body) {
 async function startPayment(order) {
   if (!paymentsUrl) { say('Приём оплаты скоро появится. Деньги не списаны.'); return; }
   say('Создаём платёж…');
-  const { orderId, paymentUrl } = await callPayments('create', { plan: order.plan, device: order.device });
+  const { orderId, paymentUrl } = await callPayments('create', { plan: order.plan, device: order.device, promo: order.promo });
   try { sessionStorage.setItem('m3-last-order', orderId); } catch {}
   location.assign(paymentUrl);
 }

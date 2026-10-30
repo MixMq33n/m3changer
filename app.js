@@ -47,7 +47,8 @@ sectionLinks.forEach(link=>{const section=document.querySelector(link.hash);if(s
  const scene=document.body,canvas=$('#ambientCanvas'),ctx=canvas.getContext('2d');
  if(!ctx)return;
  const low=(navigator.hardwareConcurrency||4)<=4||matchMedia('(max-width:700px)').matches;
- const interval=1000/(low?30:60),motes=[];
+ // Draws on every screen refresh (60, 120, 144 Hz). Only when a frame is really expensive does it fall back to 60 or 30 fps.
+ let interval=0,cost=0,calm=0;const motes=[];
  let width=0,height=0,frame=0,last=0,time=0;
  const cursor={x:0,y:0,targetX:0,targetY:0,active:false,power:0};
  let seed=37;const random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296};
@@ -56,7 +57,7 @@ sectionLinks.forEach(link=>{const section=document.querySelector(link.hash);if(s
  for(let i=0;i<(low?30:64);i++)motes.push({u:random(),v:random(),phase:random()*Math.PI*2,speed:5+random()*8,radius:.7+random()*1.2,alpha:.3+random()*.45,x:0,y:0});
  function resize(){width=innerWidth;height=innerHeight;const dpr=Math.min(devicePixelRatio||1,low?1:1.25);canvas.width=Math.round(width*dpr);canvas.height=Math.round(height*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);motes.forEach(p=>{p.x=p.u*width;p.y=p.v*height});}
  function glow(image,x,y,radius,opacity){ctx.globalAlpha=opacity;ctx.drawImage(image,x-radius,y-radius,radius*2,radius*2);}
- function draw(now){frame=0;if(!allowed()){sync();return;}frame=requestAnimationFrame(draw);if(now-last<interval-.5)return;const dt=Math.min(50,now-last||interval);last=now;time+=dt/1000;ctx.clearRect(0,0,width,height);const ease=1-Math.exp(-dt/240);cursor.x+=(cursor.targetX-cursor.x)*ease;cursor.y+=(cursor.targetY-cursor.y)*ease;cursor.power+=((cursor.active?1:0)-cursor.power)*ease;
+ function draw(now){frame=0;if(!allowed()){sync();return;}frame=requestAnimationFrame(draw);if(interval&&now-last<interval*.85)return;const began=performance.now(),dt=Math.min(50,now-last||16.7);last=now;time+=dt/1000;ctx.clearRect(0,0,width,height);const ease=1-Math.exp(-dt/240);cursor.x+=(cursor.targetX-cursor.x)*ease;cursor.y+=(cursor.targetY-cursor.y)*ease;cursor.power+=((cursor.active?1:0)-cursor.power)*ease;
   ctx.globalCompositeOperation='screen';const radius=Math.min(width*.36,470);
   glow(sage,width*.75+Math.sin(time*.35)*55,height*.23+Math.cos(time*.28)*36,radius,.16+Math.sin(time*.55)*.03);
   glow(silver,width*.19+Math.cos(time*.23)*36,height*.3+Math.sin(time*.3)*45,radius*.9,.07);
@@ -64,6 +65,9 @@ sectionLinks.forEach(link=>{const section=document.querySelector(link.hash);if(s
   if(cursor.power>.01)glow(sage,cursor.x,cursor.y,160,.16*cursor.power);
   for(const p of motes){let x=p.u*width+Math.sin(time*.5+p.phase)*22,y=((p.v*height-time*p.speed)%height+height)%height;const dx=cursor.x-x,dy=cursor.y-y,d=Math.hypot(dx,dy),pull=Math.max(0,1-d/240)*.22*cursor.power;x+=dx*pull;y+=dy*pull;p.x+=(x-p.x)*ease;p.y+=(y-p.y)*ease;if(Math.abs(y-p.y)>height/2)p.y=y;const shimmer=.65+.35*Math.sin(time*.9+p.phase)**2;glow(light,p.x,p.y,p.radius*4,p.alpha*shimmer);ctx.globalAlpha=p.alpha*shimmer;ctx.fillStyle='#ececf0';ctx.beginPath();ctx.arc(p.x,p.y,p.radius*.55,0,Math.PI*2);ctx.fill();}
   ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';
+  cost=cost?cost*.92+(performance.now()-began)*.08:performance.now()-began;
+  if(cost>12&&interval<33){interval=1000/30;calm=0;}else if(cost>5.5&&!interval){interval=1000/60;calm=0;}
+  else if(interval&&cost<(interval>20?5:2.4)&&++calm>150){interval=interval>20?1000/60:0;calm=0;}
  }
  function allowed(){return motion&&!document.hidden;}
  function sync(){if(!allowed()){cancelAnimationFrame(frame);frame=0;last=0;ctx.clearRect(0,0,width,height);canvas.dataset.running='false';}else if(!frame){last=0;canvas.dataset.running='true';frame=requestAnimationFrame(draw);}}

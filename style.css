@@ -53,7 +53,7 @@ header nav a:hover,header nav a.active{color:var(--fg)}
 /* hero */
 .hero{position:relative;min-height:min(920px,100vh);display:flex;align-items:center;padding:112px 0 72px;overflow:hidden;isolation:isolate}
 .hero-backdrop{position:absolute;inset:0;z-index:-1;overflow:hidden}
-.hero-backdrop img{position:absolute;right:-12%;top:50%;width:min(1100px,90vw);translate:0 -50%;filter:blur(60px) saturate(1.4);opacity:.35}
+.hero-backdrop img{position:absolute;right:-12%;top:50%;width:min(1100px,90vw);translate:0 -50%;filter:saturate(1.4);opacity:.35;image-rendering:auto}
 .hero-backdrop:after{content:"";position:absolute;inset:0;background:radial-gradient(60% 70% at 70% 50%,transparent,var(--bg) 75%),linear-gradient(transparent 70%,var(--bg))}
 .hero-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:40px;align-items:center;width:100%}
 .pill{color:var(--fg);background:rgb(255 255 255/.04);border-color:var(--line-2);height:30px;padding:0 12px 0 10px;transition:border-color var(--t-base) var(--ease)}
@@ -467,3 +467,10 @@ section.glow > .section-head, section.glow > .container > .section-head { animat
 section.glow .section-head h2 { animation: glow-rise .9s var(--ease) both; }
 @keyframes glow-rise { from { opacity: .35; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 body.no-motion section.glow .section-head h2 { animation: none; }
+
+/* Light mode (weak computers): same look, no live glass blur over the animated background */
+html.lite header.scrolled{backdrop-filter:none;background:rgb(11 11 12/.94)}
+html.lite .hero-selector{backdrop-filter:none;background:rgb(18 18 20/.94)}
+html.lite .zoom-label,html.lite .compare-label{backdrop-filter:none;background:rgb(0 0 0/.82)}
+html.lite #supportToggle{backdrop-filter:none;background:rgb(18 18 20/.97)}
+html.lite dialog::backdrop{backdrop-filter:none;background:rgb(0 0 0/.78)}

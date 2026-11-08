@@ -18,4 +18,4 @@ export const paymentsUrl = 'https://functions.yandexcloud.net/d4e5k6dk3fiavq7v72
 
 // Installer link shown in the account after sign-in. Empty = "появится позже".
 // Small online installer (about 90 KB) served from this site; it then fetches the newest launcher from GitHub Releases.
-export const download = { url: 'M3-Changer-Setup.exe', version: '7.1.1' };
+export const download = { url: 'M3-Changer-Setup.exe', version: '7.1.3' };

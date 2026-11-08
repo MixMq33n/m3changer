@@ -1,5 +1,5 @@
 // Public contact details only. Add your links here when they are ready.
-const M3_CONTACTS={owner:'',requisites:'',email:'',vk:'',youtube:'',telegram:'',discord:'',supportOnline:false};
+const M3_CONTACTS={owner:'',requisites:'',email:'',vk:'',youtube:'',telegram:'https://t.me/m3changer',discord:'',supportOnline:false};
 
 (() => {
  const dialog=document.getElementById('infoDialog'),content=document.getElementById('infoContent');let previousHash='';

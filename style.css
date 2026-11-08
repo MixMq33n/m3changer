@@ -474,3 +474,6 @@ html.lite .hero-selector{backdrop-filter:none;background:rgb(18 18 20/.94)}
 html.lite .zoom-label,html.lite .compare-label{backdrop-filter:none;background:rgb(0 0 0/.82)}
 html.lite #supportToggle{backdrop-filter:none;background:rgb(18 18 20/.97)}
 html.lite dialog::backdrop{backdrop-filter:none;background:rgb(0 0 0/.78)}
+
+/* New M3 logo (work/brand/make_logo.py): the artwork sits on the white tile. */
+.mark{font-size:0!important;color:transparent!important;background:var(--fg) url("assets/m3-logo.png?v=logo-1") center/86% auto no-repeat}

@@ -10,12 +10,12 @@ export const firebaseConfig = {
 };
 
 // OAuth "Web client" ID for the Google button (Google Identity Services). Firebase creates it automatically:
-// Authentication → Sign-in method → Google → Web SDK configuration → Web client ID. Empty = Google button off.
+// Authentication в†’ Sign-in method в†’ Google в†’ Web SDK configuration в†’ Web client ID. Empty = Google button off.
 export const googleClientId = '930081621755-g2upr0n000qp4gb059p2ustsf803vpf3.apps.googleusercontent.com';
 
 // Public URL of the Yandex Cloud payments function (payments-function/). Empty = checkout says payments are coming soon.
 export const paymentsUrl = 'https://functions.yandexcloud.net/d4e5k6dk3fiavq7v728p';
 
-// Installer link shown in the account after sign-in. Empty = "появится позже".
+// Installer link shown in the account after sign-in. Empty = "РїРѕСЏРІРёС‚СЃСЏ РїРѕР·Р¶Рµ".
 // Small online installer (about 90 KB) served from this site; it then fetches the newest launcher from GitHub Releases.
-export const download = { url: 'M3-Changer-Setup.exe', version: '7.1.3' };
+export const download = { url: 'M3-Changer-Setup.exe', version: '7.1.4' };
